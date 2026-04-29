@@ -4,206 +4,102 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     
-    <title>PLAY THE CHAOS | Join the Beta</title>
-    <meta name="description" content="The first-ever Glitch-Art Indie Roguelike. Embrace the noise, master the system, and play the chaos. Sign up for the beta now!">
+    <title>PLAY THE CHAOS | Pro 3D</title>
+    <meta name="description" content="The first-ever Glitch-Art Indie Roguelike.">
     <meta name="theme-color" content="#f4f0ea">
-    <meta property="og:type" content="website">
-    <meta property="og:title" content="PLAY THE CHAOS | Indie Game">
-    <meta property="og:description" content="Visual noise that converts. Master the procedural mayhem and join 50,000+ players.">
-    <meta property="og:image" content="https://images.unsplash.com/photo-1550745165-9bc0b252726f?q=80&w=1200&auto=format&fit=crop">
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link rel="preconnect" href="https://cdnjs.cloudflare.com">
-    
     <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;700&family=Syne:wght@800&display=swap" rel="stylesheet">
 
     <script defer src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
     <script defer src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+    
+    <script defer src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/three@0.134.0/examples/js/loaders/GLTFLoader.js"></script>
 
     <style>
-        /* --- 1. GLOBAL SETTINGS --- */
         :root {
-            --bg-color: #f4f0ea;
-            --black: #000000;
-            --neon-blue: #00FFFF;     
-            --poison-green: #00FF00;  
-            --accent-yellow: #FFFF00; 
-            --discord: #5865F2; 
+            --bg-color: #f4f0ea; --black: #000000;
+            --neon-blue: #00FFFF; --poison-green: #00FF00;  
+            --accent-yellow: #FFFF00; --discord: #5865F2; 
             --border-thick: 3px solid #000;
         }
 
-        * { 
-            margin: 0; padding: 0; box-sizing: border-box; 
-            word-wrap: break-word; overflow-wrap: break-word; 
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html, body { width: 100%; overflow-x: hidden; background-color: var(--bg-color); font-family: 'Space Grotesk', sans-serif; color: var(--black); -webkit-font-smoothing: antialiased; }
+
+        /* --- 3D CANVAS --- */
+        #chaos-canvas {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            z-index: 1; pointer-events: none; 
         }
 
-        html, body {
-            width: 100%; overflow-x: hidden; 
-            background-color: var(--bg-color);
-            font-family: 'Space Grotesk', sans-serif; color: var(--black);
-            -webkit-font-smoothing: antialiased;
-        }
-
-        /* --- 2. INTERACTIVE EFFECTS --- */
-        @media (pointer: fine) {
-            body, a, button, input, .brutal-box { cursor: none !important; }
-        }
-
-        .custom-cursor {
-            position: fixed; width: 40px; height: 40px;
-            border: 2px solid #fff; border-radius: 50%;
-            pointer-events: none; z-index: 10000;
-            transform: translate(-50%, -50%);
-            mix-blend-mode: difference; 
-            transition: width 0.2s ease, height 0.2s ease;
-        }
-        .custom-cursor::before, .custom-cursor::after {
-            content: ''; position: absolute; background: #fff;
-            top: 50%; left: 50%; transform: translate(-50%, -50%);
-        }
-        .custom-cursor::before { width: 12px; height: 2px; }
-        .custom-cursor::after { width: 2px; height: 12px; }
-
+        /* --- UI & LAYERS --- */
+        .hero, .marquee, .bento-section { position: relative; z-index: 10; }
+        
+        @media (pointer: fine) { body, a, button, input, .brutal-box { cursor: none !important; } }
+        .custom-cursor { position: fixed; width: 40px; height: 40px; border: 2px solid #fff; border-radius: 50%; pointer-events: none; z-index: 10000; transform: translate(-50%, -50%); mix-blend-mode: difference; transition: width 0.2s ease, height 0.2s ease; }
+        .custom-cursor::before, .custom-cursor::after { content: ''; position: absolute; background: #fff; top: 50%; left: 50%; transform: translate(-50%, -50%); }
+        .custom-cursor::before { width: 12px; height: 2px; } .custom-cursor::after { width: 2px; height: 12px; }
         @media (max-width: 768px) { .custom-cursor { display: none; } }
 
-        .noise-overlay {
-            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-            pointer-events: none; z-index: 9999;
-            /* Встроенный SVG-шум (не требует внешних ссылок, никаких 404 ошибок) */
-            background: url('data:image/svg+xml;utf8,%3Csvg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"%3E%3Cfilter id="noiseFilter"%3E%3CfeTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="3" stitchTiles="stitch"/%3E%3C/filter%3E%3Crect width="100%25" height="100%25" filter="url(%23noiseFilter)"/%3E%3C/svg%3E');
-            opacity: 0.15; 
-            mix-blend-mode: overlay; 
-        }
+        .noise-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; pointer-events: none; z-index: 9999; background: url('data:image/svg+xml;utf8,%3Csvg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"%3E%3Cfilter id="noiseFilter"%3E%3CfeTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="3" stitchTiles="stitch"/%3E%3C/filter%3E%3Crect width="100%25" height="100%25" filter="url(%23noiseFilter)"/%3E%3C/svg%3E'); opacity: 0.15; mix-blend-mode: overlay; }
 
-        /* --- 3. UI ELEMENTS --- */
-        .brutal-box {
-            background: #fff; border: var(--border-thick);
-            box-shadow: 6px 6px 0px 0px var(--black);
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        .brutal-box { background: #fff; border: var(--border-thick); box-shadow: 6px 6px 0px 0px var(--black); transition: transform 0.3s ease, box-shadow 0.3s ease; }
+        
+        /* Typography & Grid */
+        /* Typography & Grid */
+    .hero { min-height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 40px 20px; }
+    
+    .hero-title { 
+        font-family: 'Syne', sans-serif; font-size: clamp(3rem, 12vw, 9rem); 
+        line-height: 0.9; margin-bottom: 20px; opacity: 0; 
+        position: relative; z-index: 100; display: inline-block; 
+    }
+    
+    @media (pointer: fine) {
+        .hero-title:hover {
+            animation: glitch-skew 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94) both infinite;
+            color: var(--neon-blue); text-shadow: 4px 4px 0px var(--poison-green), -4px -4px 0px var(--accent-yellow);
         }
+    }
+    
+    @keyframes glitch-skew {
+        0% { transform: skew(0deg); } 20% { transform: skew(-10deg); }
+        40% { transform: skew(10deg); } 60% { transform: skew(-5deg); }
+        80% { transform: skew(5deg); } 100% { transform: skew(0deg); }
+    }
 
-        /* --- 4. HERO & MARQUEE --- */
-        .hero {
-            min-height: 100vh; display: flex; flex-direction: column;
-            justify-content: center; align-items: center; text-align: center; padding: 40px 20px;
-        }
-        .hero-title {
-            font-family: 'Syne', sans-serif; font-size: clamp(3rem, 12vw, 9rem);
-            line-height: 0.9; margin-bottom: 20px; opacity: 0; display: inline-block; position: relative;
-        }
-        @media (pointer: fine) {
-            .hero-title:hover {
-                animation: glitch-skew 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94) both infinite;
-                color: var(--neon-blue); text-shadow: 4px 4px 0px var(--poison-green), -4px -4px 0px var(--accent-yellow);
-            }
-        }
-        @keyframes glitch-skew {
-            0% { transform: skew(0deg); } 20% { transform: skew(-10deg); }
-            40% { transform: skew(10deg); } 60% { transform: skew(-5deg); }
-            80% { transform: skew(5deg); } 100% { transform: skew(0deg); }
-        }
-        .hero-subtitle { font-size: 1.1rem; font-weight: 700; max-width: 500px; opacity: 0; }
-
-        .marquee {
-            width: 100%; background: var(--black); color: #fff;
-            padding: 15px 0; border-top: var(--border-thick); border-bottom: var(--border-thick);
-            overflow: hidden; display: flex;
-        }
-        .marquee-content {
-            display: flex; font-family: 'Syne', sans-serif; font-size: 1.8rem;
-            font-weight: 800; white-space: nowrap; animation: scroll 15s linear infinite;
-        }
+    .hero-subtitle { font-size: 1.1rem; font-weight: 700; max-width: 500px; opacity: 0; }
+        .marquee { width: 100%; background: var(--black); color: #fff; padding: 15px 0; border-top: var(--border-thick); border-bottom: var(--border-thick); overflow: hidden; display: flex; }
+        .marquee-content { display: flex; font-family: 'Syne', sans-serif; font-size: 1.8rem; font-weight: 800; white-space: nowrap; animation: scroll 15s linear infinite; }
         @keyframes scroll { from { transform: translateX(0); } to { transform: translateX(-50%); } }
 
-        /* --- 5. BENTO GRID --- */
-        .bento-section {
-            width: 100%; max-width: 1200px; margin: 0 auto;
-            padding: 80px 20px; perspective: 1200px; 
-        }
-        .bento-grid {
-            display: grid; grid-template-columns: repeat(4, 1fr);
-            grid-auto-rows: 250px; gap: 25px;
-        }
-        .bento-card {
-            padding: 25px; display: flex; flex-direction: column;
-            justify-content: flex-end; opacity: 0; 
-            will-change: transform, opacity; transform-style: preserve-3d;
-            min-width: 0; 
-        }
-        
-        /* Заголовки карточек (ЗАЩИТА ОТ РАЗРЫВА СЛОВ) */
-        .bento-card h3 {
-            font-family: 'Syne', sans-serif; 
-            font-size: clamp(0.95rem, 1.5vw + 0.5rem, 1.8rem); 
-            line-height: 1.1; 
-            text-transform: uppercase; 
-            transform: translateZ(20px); 
-            word-break: keep-all; /* Не рвем слова пополам */
-            overflow-wrap: normal;
-        }
-
+        .bento-section { width: 100%; max-width: 1200px; margin: 0 auto; padding: 80px 20px; perspective: 1200px; }
+        .bento-grid { display: grid; grid-template-columns: repeat(4, 1fr); grid-auto-rows: 250px; gap: 25px; }
+        .bento-card { padding: 25px; display: flex; flex-direction: column; justify-content: flex-end; opacity: 0; transform-style: preserve-3d; }
+        .bento-card h3 { font-family: 'Syne', sans-serif; font-size: clamp(0.95rem, 1.5vw + 0.5rem, 1.8rem); line-height: 1.1; text-transform: uppercase; transform: translateZ(20px); }
         .card-chaos { grid-column: span 2; grid-row: span 2; background-color: var(--neon-blue); }
         .card-reqs { grid-column: span 2; background-color: var(--poison-green); }
-        
-        /* Видео Карточка */
         .card-gameplay { grid-column: span 1; background-color: var(--black); padding: 0; position: relative; overflow: hidden; }
-        .bento-video {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            object-fit: cover; z-index: 1; opacity: 0.8; filter: grayscale(100%) contrast(150%) brightness(0.7);
-        }
-        .video-overlay { 
-            position: absolute; z-index: 2; color: #fff; 
-            bottom: 25px; left: 15px; right: 15px; 
-            text-shadow: 3px 3px 0px var(--black);
-            font-size: clamp(0.95rem, 1.5vw + 0.5rem, 1.8rem);
-            word-break: keep-all; /* Не рвем GAMEPLAY пополам */
-            overflow-wrap: normal;
-        }
-
+        .bento-video { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; z-index: 1; opacity: 0.8; filter: grayscale(100%); }
+        .video-overlay { position: absolute; z-index: 2; color: #fff; bottom: 25px; left: 15px; right: 15px; text-shadow: 3px 3px 0px var(--black); }
         .card-social { grid-column: span 1; background-color: var(--discord); color: #fff; border-color: #fff; }
         .card-download { grid-column: span 2; background-color: var(--black); color: #fff; border-color: #fff; }
-
-        /* Лид-форма */
-        .card-lead {
-            grid-column: span 4; background-color: var(--accent-yellow);
-            display: flex; flex-direction: row; justify-content: space-between; align-items: center;
-        }
-        .lead-content h3 { font-size: 2.2rem; margin-bottom: 10px; }
-        .lead-content p { font-size: 1.1rem; font-weight: 700; transform: translateZ(20px); }
-        
+        .card-lead { grid-column: span 4; background-color: var(--accent-yellow); display: flex; flex-direction: row; justify-content: space-between; align-items: center; }
+        .lead-content h3 { font-size: 2.2rem; margin-bottom: 10px; } .lead-content p { font-size: 1.1rem; font-weight: 700; transform: translateZ(20px); }
         .brutal-form { display: flex; gap: 15px; width: 100%; max-width: 500px; transform: translateZ(20px); }
-        .brutal-form input {
-            flex-grow: 1; padding: 15px; font-family: 'Space Grotesk', sans-serif;
-            font-size: 1.1rem; font-weight: 700; border: var(--border-thick);
-            background: #fff; box-shadow: 4px 4px 0px 0px var(--black); outline: none; transition: 0.2s;
-        }
-        .brutal-form input:focus { background-color: var(--neon-blue); }
-        .brutal-form button {
-            padding: 15px 25px; font-family: 'Syne', sans-serif; font-size: 1.2rem; font-weight: 800;
-            background-color: var(--poison-green); border: var(--border-thick);
-            box-shadow: 4px 4px 0px 0px var(--black); transition: 0.2s; cursor: pointer;
-        }
-        .brutal-form button:hover { transform: translate(4px, 4px); box-shadow: 0px 0px 0px 0px var(--black); }
+        .brutal-form input { flex-grow: 1; padding: 15px; font-family: 'Space Grotesk', sans-serif; font-size: 1.1rem; font-weight: 700; border: var(--border-thick); background: #fff; box-shadow: 4px 4px 0px 0px var(--black); outline: none; }
+        .brutal-form button { padding: 15px 25px; font-family: 'Syne', sans-serif; font-size: 1.2rem; font-weight: 800; background-color: var(--poison-green); border: var(--border-thick); box-shadow: 4px 4px 0px 0px var(--black); cursor: pointer; }
 
-        /* --- 6. MOBILE FIXES --- */
-        @media (max-width: 1100px) { 
-            /* Ранний переход на 2 колонки, чтобы слова не зажимались */
-            .bento-grid { grid-template-columns: repeat(2, 1fr); } 
-            .card-lead { flex-direction: column; align-items: flex-start; gap: 20px; }
-            .brutal-form { flex-direction: column; max-width: 100%; }
-        }
-        
-        @media (max-width: 600px) {
-            .hero-title { font-size: 3rem; }
-            .bento-grid { grid-template-columns: 1fr; grid-auto-rows: auto; gap: 25px; width: calc(100% - 6px); margin: 0 auto;}
-            .bento-card { grid-column: span 1 !important; grid-row: span 1 !important; min-height: 180px; padding: 20px; }
-            .card-gameplay { min-height: 250px; }
-            .video-overlay { text-align: center; left: 10px; right: 10px; }
-        }
+        @media (max-width: 1100px) { .bento-grid { grid-template-columns: repeat(2, 1fr); } .card-lead { flex-direction: column; align-items: flex-start; } .brutal-form { flex-direction: column; max-width: 100%; } }
+        @media (max-width: 600px) { .bento-grid { grid-template-columns: 1fr; grid-auto-rows: auto; } .bento-card { grid-column: span 1 !important; grid-row: span 1 !important; min-height: 180px; } }
     </style>
 </head>
 <body>
+
+    <canvas id="chaos-canvas"></canvas>
 
     <div class="noise-overlay"></div>
     <div class="custom-cursor"></div>
@@ -214,46 +110,27 @@
     </section>
 
     <div class="marquee">
-        <div class="marquee-content">
-            * NEW UPDATE LIVE * DOWNLOAD NOW * NEW UPDATE LIVE * DOWNLOAD NOW * NEW UPDATE LIVE * DOWNLOAD NOW &nbsp;
-        </div>
-        <div class="marquee-content">
-            * NEW UPDATE LIVE * DOWNLOAD NOW * NEW UPDATE LIVE * DOWNLOAD NOW * NEW UPDATE LIVE * DOWNLOAD NOW &nbsp;
-        </div>
+        <div class="marquee-content">* NEW UPDATE LIVE * DOWNLOAD NOW * NEW UPDATE LIVE * DOWNLOAD NOW &nbsp;</div>
+        <div class="marquee-content">* NEW UPDATE LIVE * DOWNLOAD NOW * NEW UPDATE LIVE * DOWNLOAD NOW &nbsp;</div>
     </div>
 
     <section class="bento-section">
         <div class="bento-grid">
-            <div class="brutal-box bento-card card-chaos">
-                <h3>01.<br>PROCEDURAL<br>MAYHEM</h3>
-            </div>
-            <div class="brutal-box bento-card card-reqs">
-                <h3>OS: BRAIN.EXE<br>RAM: 64GB<br>GPU: NEON</h3>
-            </div>
-            
+            <div class="brutal-box bento-card card-chaos"><h3>01.<br>PROCEDURAL<br>MAYHEM</h3></div>
+            <div class="brutal-box bento-card card-reqs"><h3>OS: BRAIN.EXE<br>RAM: 64GB<br>GPU: NEON</h3></div>
             <div class="brutal-box bento-card card-gameplay">
-                <video class="bento-video" autoplay loop muted playsinline>
-                    <source src="game.mp4" type="video/mp4">
-                    Your browser does not support HTML5 video.
-                </video>
+                <video class="bento-video" autoplay loop muted playsinline><source src="game.mp4" type="video/mp4"></video>
                 <h3 class="video-overlay">GAMEPLAY</h3>
             </div>
-            
-            <div class="brutal-box bento-card card-social">
-                <h3>JOIN <span id="discord-count" style="color: var(--accent-yellow);">0</span>+<br>ON DISCORD</h3>
-            </div>
-
-            <div class="brutal-box bento-card card-download">
-                <h3 style="color: var(--poison-green);">GET IT ON STEAM</h3>
-            </div>
-
+            <div class="brutal-box bento-card card-social"><h3>JOIN <span id="discord-count" style="color: var(--accent-yellow);">0</span>+<br>ON DISCORD</h3></div>
+            <div class="brutal-box bento-card card-download"><h3 style="color: var(--poison-green);">GET IT ON STEAM</h3></div>
             <div class="brutal-box bento-card card-lead">
                 <div class="lead-content">
                     <h3>JOIN THE BETA</h3>
                     <p>Enter your email to unlock the exclusive "GLITCH" weapon skin.</p>
                 </div>
-                <form class="brutal-form" onsubmit="event.preventDefault(); alert('We got your email! See you in the chaos.');">
-                    <input type="email" placeholder="YOUR@EMAIL.COM" required aria-label="Email address">
+                <form class="brutal-form" onsubmit="event.preventDefault(); alert('We got your email!');">
+                    <input type="email" placeholder="YOUR@EMAIL.COM" required>
                     <button type="submit">CLAIM SKIN</button>
                 </form>
             </div>
@@ -261,69 +138,183 @@
     </section>
 
     <script>
-        // Ждем загрузки DOM, чтобы запустить скрипты без блокировки отрисовки
         document.addEventListener("DOMContentLoaded", () => {
             
-            // Если GSAP не загрузился, выходим без ошибки
-            if (typeof gsap === 'undefined') return;
+            // --- 1. GSAP АНИМАЦИИ ---
+            if (typeof gsap !== 'undefined') {
+                gsap.registerPlugin(ScrollTrigger);
+                const tl = gsap.timeline();
+                tl.to(".hero-title", { opacity: 1, y: 0, duration: 1, ease: "back.out(1.7)", delay: 0.1 })
+                  .to(".hero-subtitle", { opacity: 1, duration: 0.8 }, "-=0.6");
+                gsap.fromTo(".bento-card", { y: -150, opacity: 0, rotateX: -15, scale: 0.9 }, { scrollTrigger: { trigger: ".bento-grid", start: "top 85%", toggleActions: "play none none reverse" }, y: 0, opacity: 1, rotateX: 0, scale: 1, duration: 1, stagger: 0.1, ease: "bounce.out" });
+                gsap.to({val: 0}, { val: 50000, duration: 2.5, ease: "power2.out", scrollTrigger: { trigger: ".card-social", start: "top 90%" }, onUpdate: function() { document.getElementById("discord-count").innerText = Math.floor(this.targets()[0].val).toLocaleString('en-US'); } });
+            }
 
-            gsap.registerPlugin(ScrollTrigger);
+            // --- 2. THREE.JS: ЗАГРУЗКА НАСТОЯЩЕЙ 3D МОДЕЛИ ---
+            if (typeof THREE !== 'undefined' && typeof THREE.GLTFLoader !== 'undefined' && window.matchMedia("(pointer: fine)").matches) {
+                const canvas = document.querySelector('#chaos-canvas');
+                const scene = new THREE.Scene();
+                const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+                camera.position.z = 5;
 
-            // Анимация Hero
-            const tl = gsap.timeline();
-            tl.to(".hero-title", { opacity: 1, y: 0, duration: 1, ease: "back.out(1.7)", delay: 0.1 })
-              .to(".hero-subtitle", { opacity: 1, duration: 0.8 }, "-=0.6");
+                const renderer = new THREE.WebGLRenderer({ canvas: canvas, alpha: true, antialias: true });
+                renderer.setSize(window.innerWidth, window.innerHeight);
+                renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 
-            // Падение карточек с отскоком
-            gsap.fromTo(".bento-card", 
-                { y: -150, opacity: 0, rotateX: -15, scale: 0.9 },
-                {
-                    scrollTrigger: { trigger: ".bento-grid", start: "top 85%", toggleActions: "play none none reverse" },
-                    y: 0, opacity: 1, rotateX: 0, scale: 1, duration: 1, stagger: 0.1, ease: "bounce.out"
+                // Освещение (чтобы бабочка не была черной)
+                const ambientLight = new THREE.AmbientLight(0xffffff, 1.5);
+                scene.add(ambientLight);
+                const directionalLight = new THREE.DirectionalLight(0xffffff, 2);
+                directionalLight.position.set(5, 5, 5);
+                scene.add(directionalLight);
+
+                let baseModel = null;
+                let baseAnimations = null;
+                const activeButterflies = []; // Массив активных бабочек на сцене
+                const clock = new THREE.Clock();
+
+                // Инициализация Загрузчика
+                const loader = new THREE.GLTFLoader();
+                
+                // ВНИМАНИЕ: Если твой файл называется иначе (например 'model.glb'), измени название здесь!
+                loader.load('scene.gltf', function (gltf) {
+                    baseModel = gltf.scene;
+                    baseAnimations = gltf.animations; // Сохраняем анимации взмахов
+
+                    // Настройка базовой модели (размер может отличаться у разных авторов)
+                    // Если бабочка огромная - сделай 0.1, если микроскопическая - сделай 5.0
+                    baseModel.scale.set(0.1, 0.1, 0.1); 
+                    
+                    console.log("3D Model loaded successfully!");
+                }, undefined, function (error) {
+                    console.error('Error loading 3D model:', error);
+                });
+
+                let mouseX = 0, mouseY = 0;
+
+                // Функция создания клона бабочки
+                function spawn3DButterfly(x, y) {
+                    if (!baseModel) return; // Ждем пока загрузится оригинал
+
+                    // Клонируем модель
+                    const clone = baseModel.clone();
+                    
+                    // Переводим пиксели в координаты 3D мира
+                    const vec = new THREE.Vector3();
+                    const pos = new THREE.Vector3();
+                    vec.set((x / window.innerWidth) * 2 - 1, -(y / window.innerHeight) * 2 + 1, 0.5);
+                    vec.unproject(camera);
+                    vec.sub(camera.position).normalize();
+                    const distance = -camera.position.z / vec.z;
+                    pos.copy(camera.position).add(vec.multiplyScalar(distance));
+
+                    clone.position.copy(pos);
+
+                    // Задаем случайное вращение
+                    clone.rotation.x = Math.random() * Math.PI;
+                    clone.rotation.y = Math.random() * Math.PI;
+
+                    // Векторы полета (летят в разные стороны и вдаль)
+                    clone.userData = {
+                        velX: (Math.random() - 0.5) * 0.05,
+                        velY: (Math.random() - 0.5) * 0.05 + 0.02,
+                        velZ: Math.random() * -0.1 - 0.02,
+                        rotX: (Math.random() - 0.5) * 0.05,
+                        rotY: (Math.random() - 0.5) * 0.05,
+                        mixer: null
+                    };
+
+                    // Если у модели есть анимация (взмахи) - запускаем её!
+                    if (baseAnimations && baseAnimations.length > 0) {
+                        const mixer = new THREE.AnimationMixer(clone);
+                        const action = mixer.clipAction(baseAnimations[0]);
+                        action.play();
+                        // Немного меняем скорость взмахов, чтобы летели не синхронно
+                        action.timeScale = Math.random() * 0.5 + 0.8; 
+                        clone.userData.mixer = mixer;
+                    }
+
+                    scene.add(clone);
+                    activeButterflies.push(clone);
                 }
-            );
 
-            // Анимация счетчика Discord
-            gsap.to({val: 0}, {
-                val: 50000,
-                duration: 2.5,
-                ease: "power2.out",
-                scrollTrigger: { trigger: ".card-social", start: "top 90%" },
-                onUpdate: function() {
-                    document.getElementById("discord-count").innerText = Math.floor(this.targets()[0].val).toLocaleString('en-US');
+                // Спавн по клику (Взрыв!)
+                document.addEventListener('click', (event) => {
+                    for(let i = 0; i < 5; i++) { // Выпускаем 5 бабочек за клик
+                        setTimeout(() => spawn3DButterfly(event.clientX, event.clientY), i * 50);
+                    }
+                });
+
+                // Спавн при движении
+                document.addEventListener('mousemove', (event) => {
+                    if (Math.random() > 0.95) { // 5% шанс
+                        spawn3DButterfly(event.clientX, event.clientY);
+                    }
+                });
+
+                // Цикл анимации сцены
+                function animate() {
+                    requestAnimationFrame(animate);
+                    const delta = clock.getDelta();
+                    
+                    for (let i = 0; i < activeButterflies.length; i++) {
+                        const obj = activeButterflies[i];
+                        
+                        // Полет
+                        obj.position.x += obj.userData.velX;
+                        obj.position.y += obj.userData.velY;
+                        obj.position.z += obj.userData.velZ;
+                        obj.rotation.x += obj.userData.rotX;
+                        obj.rotation.y += obj.userData.rotY;
+
+                        // Обновление анимации взмахов
+                        if (obj.userData.mixer) {
+                            obj.userData.mixer.update(delta);
+                        }
+
+                        // Удаление, если улетели слишком далеко
+                        if (obj.position.z < -20 || obj.position.y > 15) {
+                            scene.remove(obj);
+                            activeButterflies.splice(i, 1);
+                            i--; 
+                        }
+                    }
+                    renderer.render(scene, camera);
                 }
-            });
+                animate();
+
+                window.addEventListener('resize', () => {
+                    camera.aspect = window.innerWidth / window.innerHeight;
+                    camera.updateProjectionMatrix();
+                    renderer.setSize(window.innerWidth, window.innerHeight);
+                });
+            }
+
+            // --- 3. КУРСОР И ПАРАЛЛАКС ---
+            const cursor = document.querySelector('.custom-cursor');
+            if (window.matchMedia("(pointer: fine)").matches) {
+                document.addEventListener('mousemove', (e) => {
+                    cursor.style.left = e.clientX + 'px'; cursor.style.top = e.clientY + 'px';
+                });
+                document.querySelectorAll('.bento-card').forEach(card => {
+                    card.addEventListener('mouseenter', () => { cursor.style.width = '60px'; cursor.style.height = '60px'; });
+                    card.addEventListener('mouseleave', () => {
+                        cursor.style.width = '40px'; cursor.style.height = '40px';
+                        card.style.transform = `perspective(1000px) rotateX(0deg) rotateY(0deg) scale(1)`;
+                        card.style.boxShadow = `6px 6px 0px 0px var(--black)`;
+                    });
+                    card.addEventListener('mousemove', (e) => {
+                        if(card.classList.contains('card-lead')) return;
+                        const rect = card.getBoundingClientRect();
+                        const x = e.clientX - rect.left, y = e.clientY - rect.top;
+                        const rotateX = ((y - rect.height / 2) / (rect.height / 2)) * -10; 
+                        const rotateY = ((x - rect.width / 2) / (rect.width / 2)) * 10;
+                        card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale(1.02) translate(3px, 3px)`;
+                        card.style.boxShadow = `3px 3px 0px 0px var(--black)`;
+                    });
+                });
+            }
         });
-
-        // Интерактив (Курсор и 3D-Параллакс)
-        const cursor = document.querySelector('.custom-cursor');
-        if (window.matchMedia("(pointer: fine)").matches) {
-            document.addEventListener('mousemove', (e) => {
-                cursor.style.left = e.clientX + 'px'; cursor.style.top = e.clientY + 'px';
-            });
-
-            document.querySelectorAll('.bento-card').forEach(card => {
-                card.addEventListener('mouseenter', () => {
-                    cursor.style.width = '60px'; cursor.style.height = '60px';
-                });
-                card.addEventListener('mouseleave', () => {
-                    cursor.style.width = '40px'; cursor.style.height = '40px';
-                    card.style.transform = `perspective(1000px) rotateX(0deg) rotateY(0deg) scale(1)`;
-                    card.style.boxShadow = `6px 6px 0px 0px var(--black)`;
-                });
-                card.addEventListener('mousemove', (e) => {
-                    // Игнорируем параллакс на форме ввода
-                    if(card.classList.contains('card-lead')) return;
-
-                    const rect = card.getBoundingClientRect();
-                    const x = e.clientX - rect.left, y = e.clientY - rect.top;
-                    const rotateX = ((y - rect.height / 2) / (rect.height / 2)) * -10; 
-                    const rotateY = ((x - rect.width / 2) / (rect.width / 2)) * 10;
-                    card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale(1.02) translate(3px, 3px)`;
-                    card.style.boxShadow = `3px 3px 0px 0px var(--black)`;
-                });
-            });
-        }
     </script>
 </body>
 </html>
